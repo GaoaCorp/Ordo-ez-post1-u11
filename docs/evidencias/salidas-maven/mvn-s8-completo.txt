@@ -1,0 +1,93 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------< com.universidad:refactoring-u11 >-------------------
+[INFO] Building refactoring-u11 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.3.2:clean (default-clean) @ refactoring-u11 ---
+[INFO] Deleting C:\Users\rapid\Desktop\evidencias-u11\snaps\s8\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ refactoring-u11 ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ refactoring-u11 ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 8 source files with javac [debug parameters release 17] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ refactoring-u11 ---
+[INFO] skip non existing resourceDirectory C:\Users\rapid\Desktop\evidencias-u11\snaps\s8\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ refactoring-u11 ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 6 source files with javac [debug parameters release 17] to target\test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ refactoring-u11 ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.universidad.refactoringu11.ArquitecturaPaquetesTest
+02:30:09.649 [main] INFO com.tngtech.archunit.core.PluginLoader -- Detected Java version 21.0.13
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.329 s -- in com.universidad.refactoringu11.ArquitecturaPaquetesTest
+[INFO] Running com.universidad.refactoringu11.inventario.ClasificadorProductoTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 s -- in com.universidad.refactoringu11.inventario.ClasificadorProductoTest
+[INFO] Running com.universidad.refactoringu11.inventario.EtiquetadoProductoTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.universidad.refactoringu11.inventario.EtiquetadoProductoTest
+[INFO] Running com.universidad.refactoringu11.inventario.InventarioServiceTest
+SALIDA de 17 unidades de Clean Code -> stock final: 3
+ALERTA: Clean Code bajo stock minimo. Reordenar 12 unidades.
+ENTRADA de 10 unidades de Clean Code -> stock final: 30
+SALIDA de 15 unidades de Clean Code -> stock final: 5
+SALIDA de 8 unidades de Clean Code -> stock final: 12
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.037 s -- in com.universidad.refactoringu11.inventario.InventarioServiceTest
+[INFO] Running com.universidad.refactoringu11.RefactoringU11ApplicationTests
+02:30:11.099 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.universidad.refactoringu11.RefactoringU11ApplicationTests]: RefactoringU11ApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+02:30:11.188 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.universidad.refactoringu11.RefactoringU11Application for test class com.universidad.refactoringu11.RefactoringU11ApplicationTests
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.5)
+
+2026-11-12T02:30:11.580-05:00  INFO 61040 --- [refactoring-u11] [           main] c.u.r.RefactoringU11ApplicationTests     : Starting RefactoringU11ApplicationTests using Java 21.0.13 with PID 61040 (started by rapid in C:\Users\rapid\Desktop\evidencias-u11\snaps\s8)
+2026-11-12T02:30:11.582-05:00  INFO 61040 --- [refactoring-u11] [           main] c.u.r.RefactoringU11ApplicationTests     : No active profile set, falling back to 1 default profile: "default"
+2026-11-12T02:30:12.078-05:00  INFO 61040 --- [refactoring-u11] [           main] c.u.r.RefactoringU11ApplicationTests     : Started RefactoringU11ApplicationTests in 0.77 seconds (process running for 3.225)
+mvn.cmd : WARNING: A Java agent has been loaded dynamically 
+(C:\Users\rapid\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.19\byte-buddy-agent-1.14.19.jar)
+At C:\Users\rapid\Desktop\evidencias-u11\u11.ps1:15 char:3
++   & $mvn @args2 2>&1 | Out-File -FilePath (Join-Path $out "mvn-$etiqu ...
++   ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (WARNING: A Java...nt-1.14.19.jar):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has 
+been appended
+SALIDA de 2 unidades de Cafe -> stock final: 4
+ALERTA: Cafe bajo stock minimo. Reordenar 11 unidades.
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.906 s -- in com.universidad.refactoringu11.RefactoringU11ApplicationTests
+[INFO] Running com.universidad.refactoringu11.reportes.ReporteBajoStockServiceTest
+SALIDA de 17 unidades de Clean Code -> stock final: 3
+ALERTA: Clean Code bajo stock minimo. Reordenar 12 unidades.
+SALIDA de 5 unidades de Teclado -> stock final: 5
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.universidad.refactoringu11.reportes.ReporteBajoStockServiceTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 23, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  7.104 s
+[INFO] Finished at: 2026-11-12T02:30:13-05:00
+[INFO] ------------------------------------------------------------------------

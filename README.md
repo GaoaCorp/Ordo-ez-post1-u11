@@ -8,11 +8,13 @@ Proyecto Spring Boot 3.3.5 (Java 17, ejecutado con JDK 21.0.13 y Maven 3.9.16) e
 ```
 src/main/java/com/universidad/refactoringu11/
 ├── RefactoringU11Application.java
-├── inventario/   Producto, TipoProducto, InventarioService, ClasificadorProducto, EtiquetadoProducto
+├── inventario/   Producto, TipoProducto, InventarioService, ClasificadorProducto,
+│                 EtiquetadoProducto, NotificadorBajoStock
 └── reportes/     ReporteBajoStockService
 src/test/java/com/universidad/refactoringu11/
 ├── ArquitecturaPaquetesTest.java, RefactoringU11ApplicationTests.java
-└── inventario/   InventarioServiceTest, ClasificadorProductoTest, EtiquetadoProductoTest  (caracterización)
+├── inventario/   InventarioServiceTest, ClasificadorProductoTest, EtiquetadoProductoTest  (caracterización)
+└── reportes/     ReporteBajoStockServiceTest
 ```
 
 Cómo ejecutar: `mvn clean test` (todas las pruebas) o `mvn test -Dtest=ArquitecturaPaquetesTest` (solo la prueba de arquitectura).
@@ -214,4 +216,109 @@ flowchart LR
 
 En la suite completa de este commit, las 18 pruebas de negocio pasan y solo falla la de arquitectura (`Tests run: 19, Failures: 1`).
 
-> **Pendiente (siguiente commit):** resolver el ciclo invirtiendo la dependencia.
+### 2.3 Resolución: inversión de dependencias con `NotificadorBajoStock`
+
+Se extrae la abstracción **en el paquete `inventario`**:
+
+```java
+package com.universidad.refactoringu11.inventario;
+
+public interface NotificadorBajoStock {
+    void notificar(Producto producto, int cantidadReorden);
+}
+```
+
+- `InventarioService` depende solo de la interfaz (`setNotificador(@Lazy NotificadorBajoStock)`) y ya **no importa nada de `reportes`**. Se puede verificar con `grep -rn "^import .*reportes" src/main/java/com/universidad/refactoringu11/inventario/`, que no devuelve resultados.
+- `ReporteBajoStockService implements NotificadorBajoStock`:
+  - `notificar(...)` registra la alerta (`"Clean Code -> reordenar 12 unidades"`);
+  - `generarReporte()` lista los productos bajo el mínimo junto con las alertas recibidas.
+- La única flecha entre paquetes queda en el sentido permitido: `reportes → inventario`.
+
+```
+$ mvn -B clean test -Dtest=ArquitecturaPaquetesTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.264 s -- in com.universidad.refactoringu11.ArquitecturaPaquetesTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+```
+
+![ArquitecturaPaquetesTest en verde](docs/evidencias/06-arquitectura-verde.png)
+
+**Diagrama de paquetes — DESPUÉS (sin ciclo):**
+
+```mermaid
+flowchart LR
+    R["reportes<br/>ReporteBajoStockService"] -- "depende de InventarioService, Producto<br/>e IMPLEMENTA NotificadorBajoStock" --> I["inventario<br/>InventarioService · NotificadorBajoStock «interface»"]
+    style I fill:#e3f6e8,stroke:#1e8449
+    style R fill:#e3f6e8,stroke:#1e8449
+```
+
+```
+   ┌──────────────────────────┐                     ┌──────────────┐
+   │        inventario        │ ◀────────────────── │   reportes   │
+   │  InventarioService ──▶   │   reportes →        │ ReporteBajo- │
+   │  «NotificadorBajoStock»  │   inventario        │ StockService │
+   └──────────────────────────┘   (única flecha)    └──────────────┘
+```
+
+### 2.4 El comportamiento no cambió
+
+La suite completa se ejecutó **sin modificar una sola línea** de `InventarioServiceTest`, `ClasificadorProductoTest` ni `EtiquetadoProductoTest`. Sus 17 pruebas siguen en verde, igual que la de arquitectura. Además se añadieron pruebas nuevas, en archivos separados, para la colaboración `inventario → notificador`:
+- `ReporteBajoStockServiceTest`, con 3 pruebas;
+- `springInyectaElNotificadorEnInventario`, que comprueba con el contexto real de Spring que el bean de reportes queda inyectado como `NotificadorBajoStock`.
+
+| Momento | ArquitecturaPaquetesTest | Pruebas de caracterización | Total |
+|---|---|---|---|
+| Con el ciclo (commit "en rojo") | ❌ 1 failure | ✅ 17/17 | 19 run, 1 failure |
+| Tras invertir la dependencia | ✅ | ✅ 17/17 (sin modificar) | **23 run, 0 failures, BUILD SUCCESS** |
+
+![Suite completa en verde](docs/evidencias/07-suite-final-verde.png)
+
+#### Decisión de diseño 3 — `NotificadorBajoStock` vive en `inventario`, no en `reportes`
+
+Según la regla de la Guía de Contenido (sección 4.3), *los paquetes de infraestructura dependen de dominio; dominio nunca depende de infraestructura*.
+
+- En este proyecto **`inventario` es el paquete de mayor nivel de abstracción**. Contiene el modelo y las reglas de negocio (stock, mínimos, política de reorden), que son estables y valiosas por sí mismas.
+- **`reportes` es un detalle de menor nivel**: una forma concreta de consumir esos eventos, que podría cambiarse por correo, Slack o una cola sin que el dominio se entere.
+- Quien define la abstracción es quien la necesita (el cliente, según DIP). `inventario` declara "necesito que alguien sea notificado del bajo stock" y no le importa quién.
+- Si la interfaz viviera en `reportes`, `inventario` seguiría importando `reportes` y el ciclo se mantendría.
+
+#### Decisión de diseño 4 — Granularidad por evento: `notificar(Producto, cantidadReorden)`
+
+**Decisión:** se notifica por evento individual.
+
+**Justificación:**
+- La detección de bajo stock ocurre **dentro de un movimiento individual**: un `actualizarInventario` afecta a un único producto. Notificar en ese mismo punto mantiene la causa y el efecto juntos y conserva el contexto exacto (la cantidad de reorden ya calculada).
+- El dominio no necesita acumular estado ni decidir cuándo "cerrar" un lote.
+- Cada evento es pequeño y fácil de probar, como muestra `ReporteBajoStockServiceTest`.
+- Quien quiera agrupar (como el propio `ReporteBajoStockService`, que acumula alertas para su reporte) puede hacerlo del lado del implementador.
+
+**Cuándo preferir un lote** (`notificar(List<Producto>)`):
+- cuando el inventario se actualiza por procesos masivos (importación nocturna, cierre de inventario, sincronización con el ERP);
+- cuando cada notificación tiene un costo alto (un correo, una llamada HTTP a proveedores, una orden de compra consolidada).
+
+En esos casos, agrupar evita cientos de mensajes y permite consolidar la reorden por proveedor. Si llegara a hacer falta, se puede añadir sin romper el contrato actual, por ejemplo con un método `default` que itere sobre el lote o con un decorador que acumule eventos.
+
+---
+
+## Historial de commits
+
+| # | Commit | Estado de las pruebas |
+|---|---|---|
+| 1 | `feat: crear inventario con Long Method ... y switch duplicado ...` | 1 (contextLoads) ✅ |
+| 2 | `test: agregar pruebas de caracterizacion antes de refactorizar (red de seguridad)` | 18 ✅ |
+| 3 | `refactor: eliminar Long Method en actualizarInventario ...` | 18 ✅ |
+| 4 | `refactor: eliminar switch duplicado sobre TipoProducto con polimorfismo` | 18 ✅ |
+| 5 | `docs: documentar evidencia de code smells, decisiones de diseno y resultado de pruebas` | — |
+| 6 | `feat: agregar modulo de reportes con notificacion de bajo stock desde inventario` | 18 ✅ |
+| 7 | `test: agregar prueba de arquitectura que detecta ciclo ... (en rojo)` | 19, **1 ❌ (esperado)** |
+| 8 | `refactor: invertir la dependencia entre inventario y reportes extrayendo NotificadorBajoStock` | 23 ✅ |
+| 9 | `docs: completar README con diagrama de paquetes antes/despues y decisiones de la Parte 2` | 23 ✅ |
+
+Las salidas completas de Maven de cada etapa están en [`docs/evidencias/salidas-maven/`](docs/evidencias/salidas-maven).
+
+## Referencias
+
+- Fowler, M. (2018). *Refactoring: Improving the design of existing code* (2.ª ed.). Addison-Wesley.
+- Feathers, M. C. (2004). *Working effectively with legacy code*. Prentice Hall.
+- Martin, R. C. (2017). *Clean architecture: A craftsman's guide to software structure and design*. Prentice Hall.
+- TNG Technology Consulting. (2024). *ArchUnit user guide* (v1.3.0). https://www.archunit.org/userguide/html/000_Index.html
