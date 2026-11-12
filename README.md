@@ -8,13 +8,14 @@ Proyecto Spring Boot 3.3.5 (Java 17, ejecutado con JDK 21.0.13 y Maven 3.9.16) e
 ```
 src/main/java/com/universidad/refactoringu11/
 ├── RefactoringU11Application.java
-└── inventario/   Producto, TipoProducto, InventarioService, ClasificadorProducto, EtiquetadoProducto
+├── inventario/   Producto, TipoProducto, InventarioService, ClasificadorProducto, EtiquetadoProducto
+└── reportes/     ReporteBajoStockService
 src/test/java/com/universidad/refactoringu11/
-├── RefactoringU11ApplicationTests.java
+├── ArquitecturaPaquetesTest.java, RefactoringU11ApplicationTests.java
 └── inventario/   InventarioServiceTest, ClasificadorProductoTest, EtiquetadoProductoTest  (caracterización)
 ```
 
-Cómo ejecutar: `mvn clean test`.
+Cómo ejecutar: `mvn clean test` (todas las pruebas) o `mvn test -Dtest=ArquitecturaPaquetesTest` (solo la prueba de arquitectura).
 
 > Todas las salidas que aparecen en este README son reales. Se obtuvieron ejecutando `mvn -B clean test` sobre el estado del código de cada commit. Las capturas están en [`docs/evidencias/`](docs/evidencias).
 
@@ -155,7 +156,62 @@ public String generarEtiqueta(Producto producto) {
 | Clases a editar para agregar un tipo | 3 (enum + 2 clases) | 1 (enum) |
 | Archivos de prueba de caracterización modificados | — | 0 |
 
-## Referencias
+---
 
-- Fowler, M. (2018). *Refactoring: Improving the design of existing code* (2.ª ed.). Addison-Wesley.
-- Feathers, M. C. (2004). *Working effectively with legacy code*. Prentice Hall.
+## Parte 2 — Diagnóstico y resolución de acoplamiento entre paquetes
+
+### 2.1 Módulo de reportes (introduce el ciclo)
+
+Se agregó `archunit-junit5 1.3.0` (scope test) y el paquete `reportes` con `ReporteBajoStockService`. Esta clase recibe `InventarioService` por constructor y usa el nuevo método `productosBajoStockMinimo()` para generar un reporte de texto. A su vez, `InventarioService` recibe `ReporteBajoStockService` por **setter** (`@Autowired(required = false)`) y lo invoca desde la rama de bajo stock, siempre protegido por el guard `!= null`.
+
+> **Nota técnica (Spring Boot 2.6+):** con referencias circulares entre beans el contexto **no arranca** (`BeanCurrentlyInCreationException`), porque `spring.main.allow-circular-references` es `false` por defecto. Por eso el parámetro del setter lleva `@Lazy`: Spring inyecta un proxy perezoso y `contextLoads` sigue en verde. `@Lazy` solo esconde el síntoma en tiempo de ejecución. **No** elimina el ciclo entre paquetes, como demuestra la prueba de arquitectura.
+
+Con el ciclo ya presente, las pruebas de negocio siguen **en verde** (18/18): el problema es de arquitectura, no de comportamiento.
+
+![Negocio en verde con el ciclo presente](docs/evidencias/04-modulo-reportes-pruebas-verdes.png)
+
+### 2.2 Diagnóstico con ArchUnit (en rojo)
+
+`ArquitecturaPaquetesTest` exige que los paquetes de primer nivel (`com.universidad.refactoringu11.(*)..`) estén libres de ciclos. Ejecutada en este punto, **falla**:
+
+```
+$ mvn -B clean test -Dtest=ArquitecturaPaquetesTest
+Architecture Violation [Priority: MEDIUM] - Rule 'slices matching 'com.universidad.refactoringu11.(*)..' should be free of cycles' was violated (1 times):
+Cycle detected: Slice inventario ->
+                Slice reportes ->
+                Slice inventario
+  1. Dependencies of Slice inventario
+    - Field <...inventario.InventarioService.reporteBajoStockService> has type <...reportes.ReporteBajoStockService>
+    - Method <...inventario.InventarioService.setReporteBajoStockService(...reportes.ReporteBajoStockService)> has parameter of type <...>
+    - Method <...inventario.InventarioService.alertarBajoStock(...)> calls method <...reportes.ReporteBajoStockService.generarReporte()> in (InventarioService.java:99)
+  2. Dependencies of Slice reportes
+    - Constructor <...reportes.ReporteBajoStockService.<init>(...inventario.InventarioService)> has parameter of type <...>
+    - Method <...reportes.ReporteBajoStockService.generarReporte()> calls method <...inventario.InventarioService.productosBajoStockMinimo()>
+    ...
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+[INFO] BUILD FAILURE
+```
+
+![ArquitecturaPaquetesTest en rojo](docs/evidencias/05-arquitectura-rojo.png)
+
+**Diagrama de paquetes — ANTES (con ciclo):**
+
+```mermaid
+flowchart LR
+    I["inventario<br/>InventarioService"] -- "importa ReporteBajoStockService<br/>(setter + generarReporte())" --> R["reportes<br/>ReporteBajoStockService"]
+    R -- "importa InventarioService, Producto<br/>(constructor + productosBajoStockMinimo())" --> I
+    style I fill:#fde2e2,stroke:#c0392b
+    style R fill:#fde2e2,stroke:#c0392b
+```
+
+```
+   ┌──────────────┐  inventario → reportes   ┌──────────────┐
+   │  inventario  │ ───────────────────────▶ │   reportes   │
+   │              │ ◀─────────────────────── │              │
+   └──────────────┘  reportes → inventario   └──────────────┘
+                         ⟲ CICLO
+```
+
+En la suite completa de este commit, las 18 pruebas de negocio pasan y solo falla la de arquitectura (`Tests run: 19, Failures: 1`).
+
+> **Pendiente (siguiente commit):** resolver el ciclo invirtiendo la dependencia.

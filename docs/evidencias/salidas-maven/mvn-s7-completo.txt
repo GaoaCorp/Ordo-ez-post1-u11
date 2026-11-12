@@ -1,0 +1,141 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------< com.universidad:refactoring-u11 >-------------------
+[INFO] Building refactoring-u11 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.3.2:clean (default-clean) @ refactoring-u11 ---
+[INFO] Deleting C:\Users\rapid\Desktop\evidencias-u11\snaps\s7\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ refactoring-u11 ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ refactoring-u11 ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 7 source files with javac [debug parameters release 17] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ refactoring-u11 ---
+[INFO] skip non existing resourceDirectory C:\Users\rapid\Desktop\evidencias-u11\snaps\s7\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ refactoring-u11 ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 5 source files with javac [debug parameters release 17] to target\test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ refactoring-u11 ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.universidad.refactoringu11.ArquitecturaPaquetesTest
+02:29:53.890 [main] INFO com.tngtech.archunit.core.PluginLoader -- Detected Java version 21.0.13
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 1.324 s <<< FAILURE! -- in com.universidad.refactoringu11.ArquitecturaPaquetesTest
+[ERROR] com.universidad.refactoringu11.ArquitecturaPaquetesTest.losPaquetesNoDebenTenerDependenciasCiclicas -- Time elapsed: 1.296 s <<< FAILURE!
+java.lang.AssertionError: 
+Architecture Violation [Priority: MEDIUM] - Rule 'slices matching 'com.universidad.refactoringu11.(*)..' should be free of cycles' was violated (1 times):
+Cycle detected: Slice inventario -> 
+                Slice reportes -> 
+                Slice inventario
+  1. Dependencies of Slice inventario
+    - Field <com.universidad.refactoringu11.inventario.InventarioService.reporteBajoStockService> has type <com.universidad.refactoringu11.reportes.ReporteBajoStockService> in (InventarioService.java:0)
+    - Method <com.universidad.refactoringu11.inventario.InventarioService.setReporteBajoStockService(com.universidad.refactoringu11.reportes.ReporteBajoStockService)> has parameter of type <com.universidad.refactoringu11.reportes.ReporteBajoStockService> in (InventarioService.java:0)
+    - Method <com.universidad.refactoringu11.inventario.InventarioService.alertarBajoStock(com.universidad.refactoringu11.inventario.Producto, int)> calls method <com.universidad.refactoringu11.reportes.ReporteBajoStockService.generarReporte()> in (InventarioService.java:99)
+  2. Dependencies of Slice reportes
+    - Constructor <com.universidad.refactoringu11.reportes.ReporteBajoStockService.<init>(com.universidad.refactoringu11.inventario.InventarioService)> has parameter of type <com.universidad.refactoringu11.inventario.InventarioService> in (ReporteBajoStockService.java:0)
+    - Field <com.universidad.refactoringu11.reportes.ReporteBajoStockService.inventarioService> has type <com.universidad.refactoringu11.inventario.InventarioService> in (ReporteBajoStockService.java:0)
+    - Method <com.universidad.refactoringu11.reportes.ReporteBajoStockService.generarReporte()> calls method <com.universidad.refactoringu11.inventario.InventarioService.productosBajoStockMinimo()> in (ReporteBajoStockService.java:19)
+    - Method <com.universidad.refactoringu11.reportes.ReporteBajoStockService.generarReporte()> calls method <com.universidad.refactoringu11.inventario.Producto.getNombre()> in (ReporteBajoStockService.java:26)
+    - Method <com.universidad.refactoringu11.reportes.ReporteBajoStockService.generarReporte()> calls method <com.universidad.refactoringu11.inventario.Producto.getStock()> in (ReporteBajoStockService.java:27)
+    - Method <com.universidad.refactoringu11.reportes.ReporteBajoStockService.generarReporte()> calls method <com.universidad.refactoringu11.inventario.Producto.getStockMinimo()> in (ReporteBajoStockService.java:28)
+	at com.tngtech.archunit.lang.ArchRule$Assertions.assertNoViolation(ArchRule.java:94)
+	at com.tngtech.archunit.lang.ArchRule$Assertions.check(ArchRule.java:86)
+	at com.tngtech.archunit.lang.ArchRule$Factory$SimpleArchRule.check(ArchRule.java:165)
+	at com.tngtech.archunit.lang.syntax.ObjectsShouldInternal.check(ObjectsShouldInternal.java:81)
+	at com.tngtech.archunit.library.dependencies.SliceRule.check(SliceRule.java:81)
+	at com.universidad.refactoringu11.ArquitecturaPaquetesTest.losPaquetesNoDebenTenerDependenciasCiclicas(ArquitecturaPaquetesTest.java:18)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+[INFO] Running com.universidad.refactoringu11.inventario.ClasificadorProductoTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.022 s -- in com.universidad.refactoringu11.inventario.ClasificadorProductoTest
+[INFO] Running com.universidad.refactoringu11.inventario.EtiquetadoProductoTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.universidad.refactoringu11.inventario.EtiquetadoProductoTest
+[INFO] Running com.universidad.refactoringu11.inventario.InventarioServiceTest
+SALIDA de 17 unidades de Clean Code -> stock final: 3
+ALERTA: Clean Code bajo stock minimo. Reordenar 12 unidades.
+ENTRADA de 10 unidades de Clean Code -> stock final: 30
+SALIDA de 15 unidades de Clean Code -> stock final: 5
+SALIDA de 8 unidades de Clean Code -> stock final: 12
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.031 s -- in com.universidad.refactoringu11.inventario.InventarioServiceTest
+[INFO] Running com.universidad.refactoringu11.RefactoringU11ApplicationTests
+02:29:55.334 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.universidad.refactoringu11.RefactoringU11ApplicationTests]: RefactoringU11ApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+02:29:55.423 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.universidad.refactoringu11.RefactoringU11Application for test class com.universidad.refactoringu11.RefactoringU11ApplicationTests
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.5)
+
+2026-11-12T02:29:55.823-05:00  INFO 32520 --- [refactoring-u11] [           main] c.u.r.RefactoringU11ApplicationTests     : Starting RefactoringU11ApplicationTests using Java 21.0.13 with PID 32520 (started by rapid in C:\Users\rapid\Desktop\evidencias-u11\snaps\s7)
+2026-11-12T02:29:55.825-05:00  INFO 32520 --- [refactoring-u11] [           main] c.u.r.RefactoringU11ApplicationTests     : No active profile set, falling back to 1 default profile: "default"
+2026-11-12T02:29:56.328-05:00  INFO 32520 --- [refactoring-u11] [           main] c.u.r.RefactoringU11ApplicationTests     : Started RefactoringU11ApplicationTests in 0.773 seconds (process running for 3.136)
+mvn.cmd : WARNING: A Java agent has been loaded dynamically 
+(C:\Users\rapid\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.19\byte-buddy-agent-1.14.19.jar)
+At C:\Users\rapid\Desktop\evidencias-u11\u11.ps1:15 char:3
++   & $mvn @args2 2>&1 | Out-File -FilePath (Join-Path $out "mvn-$etiqu ...
++   ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (WARNING: A Java...nt-1.14.19.jar):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has 
+been appended
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.875 s -- in com.universidad.refactoringu11.RefactoringU11ApplicationTests
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   ArquitecturaPaquetesTest.losPaquetesNoDebenTenerDependenciasCiclicas:18 Architecture Violation [Priority: MEDIUM] - Rule 'slices matching 'com.universidad.refactoringu11.(*)..' should be free of cycles' was violated (1 times):
+Cycle detected: Slice inventario -> 
+                Slice reportes -> 
+                Slice inventario
+  1. Dependencies of Slice inventario
+    - Field <com.universidad.refactoringu11.inventario.InventarioService.reporteBajoStockService> has type <com.universidad.refactoringu11.reportes.ReporteBajoStockService> in (InventarioService.java:0)
+    - Method <com.universidad.refactoringu11.inventario.InventarioService.setReporteBajoStockService(com.universidad.refactoringu11.reportes.ReporteBajoStockService)> has parameter of type <com.universidad.refactoringu11.reportes.ReporteBajoStockService> in (InventarioService.java:0)
+    - Method <com.universidad.refactoringu11.inventario.InventarioService.alertarBajoStock(com.universidad.refactoringu11.inventario.Producto, int)> calls method <com.universidad.refactoringu11.reportes.ReporteBajoStockService.generarReporte()> in (InventarioService.java:99)
+  2. Dependencies of Slice reportes
+    - Constructor <com.universidad.refactoringu11.reportes.ReporteBajoStockService.<init>(com.universidad.refactoringu11.inventario.InventarioService)> has parameter of type <com.universidad.refactoringu11.inventario.InventarioService> in (ReporteBajoStockService.java:0)
+    - Field <com.universidad.refactoringu11.reportes.ReporteBajoStockService.inventarioService> has type <com.universidad.refactoringu11.inventario.InventarioService> in (ReporteBajoStockService.java:0)
+    - Method <com.universidad.refactoringu11.reportes.ReporteBajoStockService.generarReporte()> calls method <com.universidad.refactoringu11.inventario.InventarioService.productosBajoStockMinimo()> in (ReporteBajoStockService.java:19)
+    - Method <com.universidad.refactoringu11.reportes.ReporteBajoStockService.generarReporte()> calls method <com.universidad.refactoringu11.inventario.Producto.getNombre()> in (ReporteBajoStockService.java:26)
+    - Method <com.universidad.refactoringu11.reportes.ReporteBajoStockService.generarReporte()> calls method <com.universidad.refactoringu11.inventario.Producto.getStock()> in (ReporteBajoStockService.java:27)
+    - Method <com.universidad.refactoringu11.reportes.ReporteBajoStockService.generarReporte()> calls method <com.universidad.refactoringu11.inventario.Producto.getStockMinimo()> in (ReporteBajoStockService.java:28)
+[INFO] 
+[ERROR] Tests run: 19, Failures: 1, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  6.792 s
+[INFO] Finished at: 2026-11-12T02:29:57-05:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.2.5:test (default-test) on project refactoring-u11: There are test failures.
+[ERROR] 
+[ERROR] Please refer to C:\Users\rapid\Desktop\evidencias-u11\snaps\s7\target\surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
