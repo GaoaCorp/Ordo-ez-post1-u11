@@ -1,6 +1,5 @@
 package com.universidad.refactoringu11.inventario;
 
-import com.universidad.refactoringu11.reportes.ReporteBajoStockService; // inventario ahora importa reportes
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -18,13 +17,13 @@ public class InventarioService {
     private final List<Producto> productos = new ArrayList<>();
     private final List<String> movimientos = new ArrayList<>();
 
-    private ReporteBajoStockService reporteBajoStockService; // colaborador opcional, sin final
+    private NotificadorBajoStock notificador; // depende de la abstraccion, no de reportes
 
-    // @Lazy: Spring Boot 2.6+ prohibe referencias circulares entre beans; el proxy
-    // perezoso permite arrancar el contexto, pero NO elimina el ciclo entre paquetes.
+    // @Lazy: la implementacion (ReporteBajoStockService) recibe InventarioService por
+    // constructor; el proxy perezoso evita la referencia circular entre beans en Spring.
     @Autowired(required = false)
-    public void setReporteBajoStockService(@Lazy ReporteBajoStockService reporteBajoStockService) {
-        this.reporteBajoStockService = reporteBajoStockService;
+    public void setNotificador(@Lazy NotificadorBajoStock notificador) {
+        this.notificador = notificador;
     }
 
     public void agregarProducto(Producto producto) {
@@ -95,8 +94,8 @@ public class InventarioService {
 
     // --- Notificacion ---
     private void alertarBajoStock(Producto producto, int cantidadReorden) {
-        if (reporteBajoStockService != null) {
-            System.out.println(reporteBajoStockService.generarReporte());
+        if (notificador != null) {
+            notificador.notificar(producto, cantidadReorden);
         }
         System.out.println("ALERTA: " + producto.getNombre()
                 + " bajo stock minimo. Reordenar " + cantidadReorden + " unidades.");
